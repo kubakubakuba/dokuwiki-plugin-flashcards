@@ -1,22 +1,30 @@
 let filteredQuestions = [];
 let currentQuestionIndex = 0;
 let score = 0;
+let detailedResults = []; // Store answers and correctness
 
+// Initialize the application after DOM content is loaded
 document.addEventListener('DOMContentLoaded', () => {
     const startButton = document.getElementById('start-button');
     const skipButton = document.getElementById('skip-button');
+    const nextButton = document.getElementById('next-button');
 
-    startButton.addEventListener('click', startTest);
-    skipButton.addEventListener('click', skipQuestion);
+    if (startButton) startButton.addEventListener('click', startTest);
+    if (skipButton) skipButton.addEventListener('click', skipQuestion);
+    if (nextButton) nextButton.addEventListener('click', handleNext);
 });
 
 function startTest() {
     const questionCountInput = document.getElementById('question-count-input');
     const questionCount = parseInt(questionCountInput.value) || originalQuestions.length;
 
-    filteredQuestions = repeatQuestions(originalQuestions, questionCount);
-    filteredQuestions = shuffleArray(filteredQuestions);
+    // Prepare questions
+    filteredQuestions = shuffleArray(repeatQuestions(originalQuestions, questionCount));
+    currentQuestionIndex = 0;
+    score = 0;
+    detailedResults = [];
 
+    // Display the test interface
     document.getElementById('welcome-screen').style.display = 'none';
     document.getElementById('test-container').style.display = 'block';
 
@@ -58,18 +66,58 @@ function showNextQuestion() {
         button.addEventListener('click', () => handleAnswer(index));
         answersContainer.appendChild(button);
     });
+
+    document.getElementById('next-button').style.display = 'none';
 }
 
 function handleAnswer(selectedIndex) {
     const question = filteredQuestions[currentQuestionIndex];
+    const answersContainer = document.getElementById('answers-container');
+    const nextButton = document.getElementById('next-button');
+
+    // Highlight correct and incorrect answers
+    answersContainer.childNodes.forEach((button, index) => {
+        if (index === question.correct) {
+            button.style.backgroundColor = 'green'; // Correct answer
+        } else if (index === selectedIndex) {
+            button.style.backgroundColor = 'red'; // Incorrect answer
+        }
+        button.disabled = true; // Disable all buttons after answering
+    });
+
+    // Record result
+    detailedResults.push({
+        question: question.question,
+        answers: question.answers,
+        correct: question.correct,
+        selected: selectedIndex,
+        isCorrect: selectedIndex === question.correct,
+    });
+
     if (selectedIndex === question.correct) {
         score++;
     }
+
+    nextButton.style.display = 'inline-block'; // Show "Next" button
+}
+
+function skipQuestion() {
+    const question = filteredQuestions[currentQuestionIndex];
+
+    // Record skipped question
+    detailedResults.push({
+        question: question.question,
+        answers: question.answers,
+        correct: question.correct,
+        selected: null,
+        isCorrect: false,
+    });
+
     currentQuestionIndex++;
     showNextQuestion();
 }
 
-function skipQuestion() {
+function handleNext() {
     currentQuestionIndex++;
     showNextQuestion();
 }
@@ -78,10 +126,48 @@ function showSummary() {
     document.getElementById('test-container').style.display = 'none';
 
     const summaryContainer = document.getElementById('summary-container');
+    const detailedSummary = document.getElementById('detailed-summary');
+
     summaryContainer.style.display = 'block';
-    summaryContainer.innerHTML = `
-        <h2>Summary</h2>
-        <p>Your score: ${score}/${filteredQuestions.length}</p>
-        <button class="button" onclick="location.reload()">Restart</button>
-    `;
+    detailedSummary.innerHTML = '';
+
+    // Generate summary content
+    let summaryHTML = `<h2>Summary of Results</h2>`;
+    for (let i = 0; i < detailedResults.length; i++) {
+        const result = detailedResults[i];
+        let answersHTML = '';
+
+        for (let j = 0; j < result.answers.length; j++) {
+            const answer = result.answers[j];
+            let color = 'black';
+
+            if (j === result.correct) {
+                color = 'green'; // Highlight correct answer
+            } else if (j === result.selected) {
+                color = 'red'; // Highlight incorrect answer
+            }
+
+            answersHTML += `<li style="color: ${color};">${answer}</li>`;
+        }
+
+        summaryHTML += `
+            <div class="result-item">
+                <h3>Question ${i + 1}: ${result.question}</h3>
+                <ul>${answersHTML}</ul>
+                <p><strong>Your Answer:</strong> ${
+                    result.selected !== null
+                        ? result.answers[result.selected]
+                        : 'Skipped'
+                }</p>
+                <p style="color: ${
+                    result.isCorrect ? 'green' : 'red'
+                }; font-weight: bold;">${result.isCorrect ? 'Correct' : 'Incorrect'}</p>
+            </div>
+        `;
+    }
+
+    summaryHTML += `<p><strong>Final Score:</strong> ${score}/${filteredQuestions.length}</p>`;
+    summaryHTML += `<button class="button" onclick="location.reload()">Restart</button>`;
+
+    detailedSummary.innerHTML = summaryHTML;
 }

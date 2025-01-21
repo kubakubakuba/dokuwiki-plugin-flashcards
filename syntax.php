@@ -3,7 +3,7 @@
  * DokuWiki Plugin flashcards (Syntax Component)
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * author: Your Name
+ * author: Jakub Pelc
  */
 
 // Must be run within DokuWiki
@@ -34,15 +34,17 @@ class syntax_plugin_flashcards extends DokuWiki_Syntax_Plugin {
     public function handle($match, $state, $pos, Doku_Handler $handler) {
         $match = trim(substr($match, 12, -13)); // Strip <flashcards> tags
 
-        // Parse optional heading, subtext, skip text, and defaultnum
+        // Parse optional attributes
         preg_match('/heading="(.*?)"/', $match, $headingMatch);
         preg_match('/subtext="(.*?)"/', $match, $subtextMatch);
         preg_match('/skiptext="(.*?)"/', $match, $skipTextMatch);
+        preg_match('/nexttext="(.*?)"/', $match, $nextTextMatch);
         preg_match('/defaultnum="(\d+)"/', $match, $defaultNumMatch);
 
         $heading = $headingMatch[1] ?? 'Flashcard Quiz';
         $subtext = $subtextMatch[1] ?? 'Answer the following questions:';
         $skipText = $skipTextMatch[1] ?? 'Skip';
+        $nextText = $nextTextMatch[1] ?? 'Next';
         $defaultNum = $defaultNumMatch[1] ?? 5; // Default to 5 if not provided
 
         // Parse the content within the <questions></questions> block
@@ -53,6 +55,7 @@ class syntax_plugin_flashcards extends DokuWiki_Syntax_Plugin {
                 'heading' => $heading,
                 'subtext' => $subtext,
                 'skipText' => $skipText,
+                'nextText' => $nextText,
                 'defaultNum' => $defaultNum,
                 'questions' => [], // No valid content found
             ];
@@ -97,6 +100,7 @@ class syntax_plugin_flashcards extends DokuWiki_Syntax_Plugin {
             'heading' => $heading,
             'subtext' => $subtext,
             'skipText' => $skipText,
+            'nextText' => $nextText,
             'defaultNum' => $defaultNum,
             'questions' => $questions,
         ];
@@ -108,6 +112,7 @@ class syntax_plugin_flashcards extends DokuWiki_Syntax_Plugin {
         $heading = htmlspecialchars($data['heading']);
         $subtext = htmlspecialchars($data['subtext']);
         $skipText = htmlspecialchars($data['skipText']);
+        $nextText = htmlspecialchars($data['nextText']);
         $defaultNum = htmlspecialchars($data['defaultNum']);
         $questions = json_encode($data['questions'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
 
@@ -124,6 +129,7 @@ class syntax_plugin_flashcards extends DokuWiki_Syntax_Plugin {
                         <p id='question-text'></p>
                         <div class='answers' id='answers-container'></div>
                         <button id='skip-button' class='button'>{$skipText}</button>
+                        <button id='next-button' class='button' style='display: none;'>{$nextText}</button>
                     </div>
                 </div>
                 <div id='summary-container' style='display: none;'></div>

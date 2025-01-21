@@ -1,0 +1,43 @@
+#flashcards-container {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f4f4f9;
+    color: #333;
+}
+
+#flashcards-container .button {
+    margin: 10px 0;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#flashcards-container .question {
+    margin-bottom: 20px;
+}
+
+#flashcards-container .answers {
+    margin-top: 10px;
+}
+
+#flashcards-container .answers button {
+    display: block;
+    width: 100%;
+    margin: 5px 0;
+}
+
+#flashcards-container .correct {
+    color: green;
+}
+
+#flashcards-container .wrong {
+    color: red;
+}
+
+#question-count-input {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 16px;
+    width: 100%;
+}
