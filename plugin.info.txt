@@ -1,0 +1,7 @@
+base   flashcards
+author Jakub Pelc
+email  admin@swpelc.eu
+date   2025-01-21
+name   Flashcards plugin
+desc   Implements simple flashcard training window.
+url    https://www.dokuwiki.org/plugin:flashcards
