@@ -132,7 +132,9 @@ class syntax_plugin_flashcards extends DokuWiki_Syntax_Plugin {
                         <button id='next-button' class='button' style='display: none;'>{$nextText}</button>
                     </div>
                 </div>
-                <div id='summary-container' style='display: none;'></div>
+                <div id='summary-container' style='display: none;'>
+					<div id='detailed-summary'></div>
+				</div>
             </div>
         </div>
         <link rel='stylesheet' href='" . DOKU_BASE . "lib/plugins/flashcards/style.css'>
