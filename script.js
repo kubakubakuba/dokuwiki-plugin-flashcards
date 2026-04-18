@@ -68,7 +68,9 @@ function showNextQuestion() {
     question.answers.forEach((answer, index) => {
         const button = document.createElement('button');
         button.className = 'button';
-        button.textContent = answer;
+        button.innerHTML = (question.answerHtml && question.answerHtml[index])
+            ? question.answerHtml[index]
+            : escapeHtml(answer);
         button.addEventListener('click', () => handleAnswer(index));
         answersContainer.appendChild(button);
     });
@@ -96,6 +98,7 @@ function handleAnswer(selectedIndex) {
         question: question.question,
         questionHtml: question.questionHtml,
         answers: question.answers,
+        answerHtml: question.answerHtml,
         correct: question.correct,
         selected: selectedIndex,
         isCorrect: selectedIndex === question.correct,
@@ -116,6 +119,7 @@ function skipQuestion() {
         question: question.question,
         questionHtml: question.questionHtml,
         answers: question.answers,
+        answerHtml: question.answerHtml,
         correct: question.correct,
         selected: null,
         isCorrect: false,
@@ -155,7 +159,10 @@ function showSummary() {
                 color = 'red'; // Highlight incorrect answer
             }
 
-            answersHTML += `<li style="color: ${color};">${escapeHtml(answer)}</li>`;
+            const answerMarkup = (result.answerHtml && result.answerHtml[j])
+                ? result.answerHtml[j]
+                : escapeHtml(answer);
+            answersHTML += `<li style="color: ${color};">${answerMarkup}</li>`;
         }
 
         summaryHTML += `
@@ -165,7 +172,9 @@ function showSummary() {
                 <ul>${answersHTML}</ul>
                 <p><strong>Your Answer:</strong> ${
                     result.selected !== null
-                        ? escapeHtml(result.answers[result.selected])
+                        ? ((result.answerHtml && result.answerHtml[result.selected])
+                            ? result.answerHtml[result.selected]
+                            : escapeHtml(result.answers[result.selected]))
                         : 'Skipped'
                 }</p>
                 <p style="color: ${

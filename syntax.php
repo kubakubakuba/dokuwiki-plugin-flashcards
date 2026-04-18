@@ -76,6 +76,10 @@ class syntax_plugin_flashcards extends DokuWiki_Syntax_Plugin {
                     continue;
                 }
 
+                if (!$inAnswers && preg_match('/^\s*(?:-\s*)?\*/', $rawLine)) {
+                    $inAnswers = true;
+                }
+
                 if (!$inAnswers && preg_match('/^\s*-\s*/', $rawLine)) {
                     $inAnswers = true;
                 }
@@ -103,12 +107,12 @@ class syntax_plugin_flashcards extends DokuWiki_Syntax_Plugin {
                     continue;
                 }
 
-                if (strpos($line, '*') !== false) {
+                if (preg_match('/^\s*(?:-\s*)?\*/', $line)) {
                     $correctAnswerIndex = count($answers);
-                    $line = str_replace('*', '', $line); // Remove the correct marker
+                    $line = preg_replace('/^\s*(?:-\s*)?\*\s*/', '', $line); // Remove the correct marker
+                } else {
+                    $line = preg_replace('/^\s*-\s*/', '', $line);
                 }
-
-                $line = preg_replace('/^\s*-\s*/', '', $line);
                 $answers[] = trim($line);
             }
 
@@ -145,6 +149,8 @@ class syntax_plugin_flashcards extends DokuWiki_Syntax_Plugin {
 
         foreach ($data['questions'] as $question) {
             $questionHtml = '';
+            $answerHtml = [];
+
             if (function_exists('p_get_instructions') && function_exists('p_render')) {
                 $instructions = p_get_instructions($question['question']);
                 $info = [];
@@ -152,11 +158,27 @@ class syntax_plugin_flashcards extends DokuWiki_Syntax_Plugin {
                 if (!empty($instructions)) {
                     $questionHtml = p_render('xhtml', $instructions, $info);
                 }
+
+                foreach ($question['answers'] as $answer) {
+                    $answerInstructions = p_get_instructions($answer);
+                    $answerInfo = [];
+
+                    if (!empty($answerInstructions)) {
+                        $answerHtml[] = p_render('xhtml', $answerInstructions, $answerInfo);
+                    } else {
+                        $answerHtml[] = hsc($answer);
+                    }
+                }
             } else {
                 $questionHtml = nl2br(hsc($question['question']));
+
+                foreach ($question['answers'] as $answer) {
+                    $answerHtml[] = nl2br(hsc($answer));
+                }
             }
 
             $question['questionHtml'] = $questionHtml;
+            $question['answerHtml'] = $answerHtml;
             $questionsForClient[] = $question;
         }
 

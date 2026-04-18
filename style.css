@@ -17,7 +17,9 @@
 }
 
 #question-text img,
-#flashcards-container .summary-question img {
+#flashcards-container .summary-question img,
+#flashcards-container .answers button img,
+#flashcards-container .result-item li img {
     max-width: 100%;
     height: auto;
 }
