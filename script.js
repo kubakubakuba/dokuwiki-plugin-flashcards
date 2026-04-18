@@ -9,6 +9,36 @@ function escapeHtml(value) {
     return div.innerHTML;
 }
 
+function renderDynamicMath(rootElement) {
+    if (!rootElement) return;
+
+    if (window.MathJax) {
+        if (typeof window.MathJax.typesetClear === 'function') {
+            window.MathJax.typesetClear([rootElement]);
+        }
+        if (typeof window.MathJax.typesetPromise === 'function') {
+            window.MathJax.typesetPromise([rootElement]).catch(() => {});
+            return;
+        }
+        if (typeof window.MathJax.typeset === 'function') {
+            window.MathJax.typeset([rootElement]);
+            return;
+        }
+    }
+
+    if (typeof window.renderMathInElement === 'function') {
+        window.renderMathInElement(rootElement, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false},
+                {left: '\\(', right: '\\)', display: false},
+                {left: '\\[', right: '\\]', display: true},
+            ],
+            throwOnError: false,
+        });
+    }
+}
+
 // Initialize the application after DOM content is loaded
 document.addEventListener('DOMContentLoaded', () => {
     const startButton = document.getElementById('start-button');
@@ -74,6 +104,9 @@ function showNextQuestion() {
         button.addEventListener('click', () => handleAnswer(index));
         answersContainer.appendChild(button);
     });
+
+    renderDynamicMath(document.getElementById('question-text'));
+    renderDynamicMath(answersContainer);
 
     document.getElementById('next-button').style.display = 'none';
 }
@@ -188,4 +221,5 @@ function showSummary() {
     summaryHTML += `<button class="button" onclick="location.reload()">Restart</button>`;
 
     detailedSummary.innerHTML = summaryHTML;
+    renderDynamicMath(detailedSummary);
 }
