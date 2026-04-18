@@ -73,6 +73,9 @@ class syntax_plugin_flashcards extends DokuWiki_Syntax_Plugin {
 
             foreach ($lines as $rawLine) {
                 if (trim($rawLine) === '') {
+                    if (!$inAnswers) {
+                        $questionLines[] = '';
+                    }
                     continue;
                 }
 
