@@ -9,6 +9,8 @@
 // Must be run within DokuWiki
 if (!defined('DOKU_INC')) die();
 
+require_once(DOKU_INC . 'inc/parserutils.php');
+
 class syntax_plugin_flashcards extends DokuWiki_Syntax_Plugin {
 
     public function getType() {
@@ -64,8 +66,28 @@ class syntax_plugin_flashcards extends DokuWiki_Syntax_Plugin {
         // Parse questions and answers using --- as delimiter
         $questions = [];
         foreach (preg_split('/---\n/', $content) as $block) {
-            $lines = array_filter(explode("\n", trim($block))); // Filter empty lines
-            $question = array_shift($lines);
+            $lines = explode("\n", trim($block));
+            $questionLines = [];
+            $answerLines = [];
+            $inAnswers = false;
+
+            foreach ($lines as $rawLine) {
+                if (trim($rawLine) === '') {
+                    continue;
+                }
+
+                if (!$inAnswers && preg_match('/^\s*-\s*/', $rawLine)) {
+                    $inAnswers = true;
+                }
+
+                if ($inAnswers) {
+                    $answerLines[] = $rawLine;
+                } else {
+                    $questionLines[] = $rawLine;
+                }
+            }
+
+            $question = trim(implode("\n", $questionLines));
 
             if (empty($question)) {
                 continue; // Skip empty question blocks
@@ -74,15 +96,20 @@ class syntax_plugin_flashcards extends DokuWiki_Syntax_Plugin {
             $answers = [];
             $correctAnswerIndex = null;
 
-            foreach ($lines as $index => $line) {
+            foreach ($answerLines as $line) {
                 $line = trim($line);
 
+                if ($line === '') {
+                    continue;
+                }
+
                 if (strpos($line, '*') !== false) {
-                    $correctAnswerIndex = $index;
+                    $correctAnswerIndex = count($answers);
                     $line = str_replace('*', '', $line); // Remove the correct marker
                 }
 
-                $answers[] = trim($line, "- ");
+                $line = preg_replace('/^\s*-\s*/', '', $line);
+                $answers[] = trim($line);
             }
 
             if (empty($answers) || $correctAnswerIndex === null) {
@@ -114,7 +141,26 @@ class syntax_plugin_flashcards extends DokuWiki_Syntax_Plugin {
         $skipText = htmlspecialchars($data['skipText']);
         $nextText = htmlspecialchars($data['nextText']);
         $defaultNum = htmlspecialchars($data['defaultNum']);
-        $questions = json_encode($data['questions'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
+        $questionsForClient = [];
+
+        foreach ($data['questions'] as $question) {
+            $questionHtml = '';
+            if (function_exists('p_get_instructions') && function_exists('p_render')) {
+                $instructions = p_get_instructions($question['question']);
+                $info = [];
+
+                if (!empty($instructions)) {
+                    $questionHtml = p_render('xhtml', $instructions, $info);
+                }
+            } else {
+                $questionHtml = nl2br(hsc($question['question']));
+            }
+
+            $question['questionHtml'] = $questionHtml;
+            $questionsForClient[] = $question;
+        }
+
+        $questions = json_encode($questionsForClient, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
 
         $renderer->doc .= "<div id='flashcards-container'>
             <h1>{$heading}</h1>

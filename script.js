@@ -3,6 +3,12 @@ let currentQuestionIndex = 0;
 let score = 0;
 let detailedResults = []; // Store answers and correctness
 
+function escapeHtml(value) {
+    const div = document.createElement('div');
+    div.textContent = value ?? '';
+    return div.innerHTML;
+}
+
 // Initialize the application after DOM content is loaded
 document.addEventListener('DOMContentLoaded', () => {
     const startButton = document.getElementById('start-button');
@@ -54,7 +60,7 @@ function showNextQuestion() {
     }
 
     const question = filteredQuestions[currentQuestionIndex];
-    document.getElementById('question-text').innerText = question.question;
+    document.getElementById('question-text').innerHTML = question.questionHtml || escapeHtml(question.question);
 
     const answersContainer = document.getElementById('answers-container');
     answersContainer.innerHTML = '';
@@ -62,7 +68,7 @@ function showNextQuestion() {
     question.answers.forEach((answer, index) => {
         const button = document.createElement('button');
         button.className = 'button';
-        button.innerText = answer;
+        button.textContent = answer;
         button.addEventListener('click', () => handleAnswer(index));
         answersContainer.appendChild(button);
     });
@@ -88,6 +94,7 @@ function handleAnswer(selectedIndex) {
     // Record result
     detailedResults.push({
         question: question.question,
+        questionHtml: question.questionHtml,
         answers: question.answers,
         correct: question.correct,
         selected: selectedIndex,
@@ -107,6 +114,7 @@ function skipQuestion() {
     // Record skipped question
     detailedResults.push({
         question: question.question,
+        questionHtml: question.questionHtml,
         answers: question.answers,
         correct: question.correct,
         selected: null,
@@ -147,16 +155,17 @@ function showSummary() {
                 color = 'red'; // Highlight incorrect answer
             }
 
-            answersHTML += `<li style="color: ${color};">${answer}</li>`;
+            answersHTML += `<li style="color: ${color};">${escapeHtml(answer)}</li>`;
         }
 
         summaryHTML += `
             <div class="result-item">
-                <h3>Question ${i + 1}: ${result.question}</h3>
+                <h3>Question ${i + 1}</h3>
+                <div class="summary-question">${result.questionHtml || escapeHtml(result.question)}</div>
                 <ul>${answersHTML}</ul>
                 <p><strong>Your Answer:</strong> ${
                     result.selected !== null
-                        ? result.answers[result.selected]
+                        ? escapeHtml(result.answers[result.selected])
                         : 'Skipped'
                 }</p>
                 <p style="color: ${

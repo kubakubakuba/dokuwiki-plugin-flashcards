@@ -16,6 +16,16 @@
     margin-bottom: 20px;
 }
 
+#question-text img,
+#flashcards-container .summary-question img {
+    max-width: 100%;
+    height: auto;
+}
+
+#flashcards-container .summary-question {
+    margin-bottom: 10px;
+}
+
 #flashcards-container .answers {
     margin-top: 10px;
 }

@@ -25,3 +25,28 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 See the LICENSING file for details
+
+----
+
+Question content formatting
+
+Questions now support DokuWiki-rendered content, including:
+- image links (e.g. {{:wiki:image.png}})
+- normal links and internal links
+- LaTeX/math syntax provided by your math plugin
+- custom plugin tags such as <tikzjax>...</tikzjax>
+
+Within each question block, place all question lines first, then answers as lines starting with "- ". Mark the correct answer with "*".
+
+Example:
+
+<flashcards>
+<questions>
+What is shown in this image?
+{{:wiki:diagram.png}}
+- Option A
+- *Option B
+- Option C
+---
+</questions>
+</flashcards>
