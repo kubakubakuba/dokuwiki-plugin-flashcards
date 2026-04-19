@@ -55,7 +55,7 @@ function startTest() {
     const questionCount = parseInt(questionCountInput.value) || originalQuestions.length;
 
     // Prepare questions
-    filteredQuestions = shuffleArray(repeatQuestions(originalQuestions, questionCount));
+    filteredQuestions = selectRandomQuestions(originalQuestions, questionCount);
     currentQuestionIndex = 0;
     score = 0;
     detailedResults = [];
@@ -67,12 +67,24 @@ function startTest() {
     showNextQuestion();
 }
 
-function repeatQuestions(questions, count) {
-    const repeated = [];
-    while (repeated.length < count) {
-        repeated.push(...questions);
+function selectRandomQuestions(questions, count) {
+    if (count <= questions.length) {
+        return shuffleArray([...questions]).slice(0, count);
     }
-    return repeated.slice(0, count);
+
+    const selected = [];
+    const fullRounds = Math.floor(count / questions.length);
+    const remainder = count % questions.length;
+
+    for (let i = 0; i < fullRounds; i++) {
+        selected.push(...shuffleArray([...questions]));
+    }
+
+    if (remainder > 0) {
+        selected.push(...shuffleArray([...questions]).slice(0, remainder));
+    }
+
+    return shuffleArray(selected);
 }
 
 function shuffleArray(array) {
